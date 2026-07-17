@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Lesson 1 · Java 程序结构与编译运行模型</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main>
+
+<div class="kicker">Lesson 0001 · Java 基础</div>
+<h1>Java 程序的结构与编译运行模型</h1>
+
+<p>
+你会 Python 和 TypeScript,通用编程概念(变量、函数、类、类型)不用重新学。
+这一课只讲一件 Java 特有、Python 和 TS 都没有的事情:
+<strong>Java 源代码在能运行之前,必须先被编译成字节码,而且文件、类、方法的命名有硬性规则。</strong>
+</p>
+
+<h2>1. 三种语言的运行方式对比</h2>
+
+<table class="compare-table">
+<tr><th></th><th>Python</th><th>TypeScript</th><th>Java</th></tr>
+<tr>
+  <td>你写的代码怎么变成能跑的东西</td>
+  <td><code>python app.py</code> 直接解释执行</td>
+  <td><code>tsc</code> 编译成 <code>.js</code>,再交给 Node/浏览器跑</td>
+  <td><code>javac</code> 编译成 <code>.class</code>(字节码),再交给 JVM(<code>java</code> 命令)跑</td>
+</tr>
+<tr>
+  <td>入口在哪</td>
+  <td>顶层代码从上往下执行,没有强制入口函数</td>
+  <td>顶层代码直接执行,没有强制入口函数</td>
+  <td>必须有一个方法签名 <strong>一字不差</strong> 是 <code>public static void main(String[] args)</code>,JVM 专门找这个方法开始跑</td>
+</tr>
+<tr>
+  <td>文件名规则</td>
+  <td>文件名随意</td>
+  <td>文件名随意</td>
+  <td>如果一个类被声明为 <code>public</code>,文件名必须和类名完全一致(区分大小写),扩展名 <code>.java</code></td>
+</tr>
+</table>
+
+<div class="callout">
+<strong>为什么 Java 要这么设计?</strong><br>
+Java 从一开始就是为"编译一次,到处运行"设计的:<code>javac</code> 把源码编译成与平台无关的字节码(<code>.class</code> 文件),
+真正执行字节码的是 JVM(Java Virtual Machine)。文件名必须匹配 public 类名,是为了让编译器和工具能在不打开文件内容的情况下,
+就知道"这个文件里应该有哪个 public 类"——这在大型项目里对构建工具、类加载器都很重要。
+</div>
+
+<h2>2. 一个最小的 Java 程序长什么样</h2>
+
+<pre><code>public class Greeting {
+    public static void main(String[] args) {
+        System.out.println("Hello, Java");
+    }
+}</code></pre>
+
+<p>逐个拆解这几个词:</p>
+
+<ul>
+<li><code>public class Greeting</code> — 声明一个名叫 <code>Greeting</code> 的类,<code>public</code> 表示这个类对其他包可见。这个文件必须叫 <code>Greeting.java</code>。</li>
+<li><code>public static void main(String[] args)</code> — 这是 JVM 认识的固定入口签名。
+  <ul>
+    <li><code>public</code>:JVM 要能从外部调用它。</li>
+    <li><code>static</code>:不需要先创建一个 <code>Greeting</code> 对象就能调用——JVM 启动时还没有任何对象实例。</li>
+    <li><code>void</code>:这个方法不返回值。</li>
+    <li><code>String[] args</code>:命令行参数数组,类似 Node.js 里的 <code>process.argv</code>。</li>
+  </ul>
+</li>
+<li><code>System.out.println(...)</code> — 标准输出打印,相当于 Python 的 <code>print()</code>、TS/JS 的 <code>console.log()</code>。</li>
+</ul>
+
+<h2>3. 编译和运行是两个独立的命令</h2>
+
+<pre><code>javac Greeting.java   # 编译:生成 Greeting.class(字节码)
+java Greeting          # 运行:注意不加 .class 后缀,交给 JVM 执行</code></pre>
+
+<div class="callout ok">
+<strong>类比 TypeScript:</strong> <code>javac</code> 大致对应 <code>tsc</code>,<code>java</code> 大致对应 <code>node</code>。
+区别是 TypeScript 编译产物是给 Node/浏览器读的 JS 源码,Java 编译产物是给 JVM 读的字节码,人类不会直接去读 <code>.class</code> 文件。
+</div>
+
+<h2>预测一下:文件名不匹配会怎样?</h2>
+
+<div class="quiz">
+<p>如果你把上面这段代码存成 <code>Hello.java</code>(而不是 <code>Greeting.java</code>),然后运行 <code>javac Hello.java</code>,会发生什么?</p>
+<details class="reveal">
+<summary>先自己想,想好了再展开看答案</summary>
+<p>
+编译失败。<code>javac</code> 会报类似:
+<code>class Greeting is public, should be declared in a file named Greeting.java</code>
+这是你以后一定会亲眼见到的报错——现在提前认识它,以后见到就不会慌。
+</p>
+</details>
+</div>
+
+<h2 id="exercise">动手练习</h2>
+
+<div class="exercise">
+<h3>练习 1:闭卷编写并跑通(IntelliJ IDEA)</h3>
+<p>
+用 IntelliJ IDEA 打开(或新建)<code>E:\java-spring-learning</code> 这个文件夹作为项目根目录,
+在 <code>exercises/lesson01/</code> 下<strong>自己手动输入</strong>(不要复制粘贴、不要用 IDEA 的自动补全生成整个方法体)一个 Java 程序:
+</p>
+<ul>
+<li>类名叫 <code>Roster</code>(对应真实后端场景:打印课程花名册的一部分)</li>
+<li>文件名必须匹配 —— 在 IDEA 里新建文件时选 <strong>Java Class</strong>,名字填 <code>Roster</code>,IDEA 会自动生成正确文件名和 <code>public class Roster { }</code> 骨架</li>
+<li>自己手写 <code>main</code> 方法签名(不要接受 IDEA 自动补全生成的完整签名,自己敲一遍加深记忆)</li>
+<li>在 <code>main</code> 方法里,用 <strong>三次</strong> <code>System.out.println</code> 分别打印:
+  <ol>
+    <li><code>Course Roster</code></li>
+    <li><code>------------</code></li>
+    <li><code>Alice</code></li>
+  </ol>
+</li>
+</ul>
+<p>
+写完后,把光标放在 <code>main</code> 方法里,点击左侧行号旁出现的绿色三角形 ▶(或右键选择 <code>Run 'Roster.main()'</code>)。
+IDEA 会在背后自动帮你做 <code>javac</code> + <code>java</code> 这两步——这也是为什么上一节讲的编译模型仍然值得理解:
+IDEA 只是把这两条命令包装进了一个按钮,底层发生的事没有变。
+</p>
+<p>确认底部 Run 面板里的输出和上面三行完全一致。</p>
+<p>
+完成后把你写的文件内容贴给我,或者直接告诉我运行结果——如果中途遇到编译错误(IDEA 会在代码里用红色波浪线标出,
+或者在 Run 面板里显示报错),把报错信息发给我,我会先帮你解释报错在说什么,再给一个方向,不会直接把代码写好扔给你。
+</p>
+</div>
+
+<div class="exercise">
+<h3>练习 2:小设计题(不用写代码,口头回答即可)</h3>
+<p>
+假设你要在同一个文件夹里再写一个程序,类名是 <code>UserService</code>,这个类<strong>不是</strong> public 的
+(去掉 <code>public</code>,只写 <code>class UserService { ... }</code>)。
+这种情况下,文件名还必须叫 <code>UserService.java</code> 吗?为什么?
+(提示:回顾一下上面"为什么 Java 要这么设计"里给出的理由,推理一下规则的边界在哪)
+</p>
+</div>
+
+<h2>参考资料</h2>
+<p class="source-link">
+主要参考:<a href="https://docs.oracle.com/javase/tutorial/getting_started/cupojava/" target="_blank">Oracle 官方教程 · "A Closer Look at the 'Hello World!' Application"</a>
+—— 这是 Java 编译运行模型最权威的解释来源。
+</p>
+
+<div class="ask-agent">
+有任何没搞懂的地方,随时问我——这就是这门课存在的意义。不要因为"看起来懂了"就跳过练习,
+闭卷手写并跑通,才算真的掌握。
+</div>
+
+<div class="nav">
+<a href="../reference/">参考文档目录</a> · 下一课会根据你的练习结果安排
+</div>
+
+</main>
+</body>
+</html>
