@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Lesson 4 · Java 循环</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main>
+
+<div class="kicker">Lesson 0004 · Java 基础</div>
+<h1>循环:for 与 while</h1>
+
+<p>
+条件分支解决了"选哪条路走"的问题,循环解决"同一件事重复做"的问题——批量处理学生名单、重试请求、累加统计,都离不开循环。
+Java 的循环语法和 TS/JS 几乎一致,和 Python 差异更大一些(Python 没有传统 C 风格 for,靠 <code>range()</code>/<code>for...in</code> 代替)。
+</p>
+
+<h2>1. for 循环</h2>
+
+<pre><code>for (int i = 0; i &lt; 5; i++) {
+    System.out.println(i);
+}</code></pre>
+
+<table class="compare-table">
+<tr><th></th><th>Python</th><th>TypeScript</th><th>Java</th></tr>
+<tr>
+  <td>数 0~4</td>
+  <td><code>for i in range(5):</code></td>
+  <td><code>for (let i = 0; i &lt; 5; i++) {}</code></td>
+  <td><code>for (int i = 0; i &lt; 5; i++) {}</code></td>
+</tr>
+</table>
+
+<div class="callout">
+<code>for (初始化; 条件; 每轮结束后执行)</code> 三段式:初始化只跑一次,条件每轮循环前检查(必须是 <code>boolean</code>,和 <code>if</code> 一样),
+第三段在每轮循环体跑完之后执行。三段都可以留空(比如 <code>for (;;) {}</code> 就是死循环),但这一课先都写全。
+</div>
+
+<h2>2. while 循环</h2>
+
+<pre><code>int count = 0;
+while (count &lt; 3) {
+    System.out.println(count);
+    count++;
+}</code></pre>
+
+<p>
+<code>while</code>Python/TS 的写法几乎一样(条件同样要括号 + boolean)。什么时候用 <code>for</code>、什么时候用 <code>while</code>:
+明确知道要循环几次(或者有个计数器)用 <code>for</code>;循环次数取决于运行时才知道的条件(比如"读到 null 为止")用 <code>while</code>。
+</p>
+
+<h2>3. break 与 continue</h2>
+
+<table class="compare-table">
+<tr><th>关键字</th><th>作用</th></tr>
+<tr><td><code>break</code></td><td>立刻结束整个循环</td></tr>
+<tr><td><code>continue</code></td><td>跳过本轮剩余代码,直接进入下一轮</td></tr>
+</table>
+
+<p>这两个关键字和 Python/TS 的行为完全一致,不用特别适应。</p>
+
+<h2>预测一下:这段代码输出什么?</h2>
+
+<div class="quiz">
+<pre><code>int sum = 0;
+for (int i = 1; i &lt;= 5; i++) {
+    if (i == 3) {
+        continue;
+    }
+    sum += i;
+}
+System.out.println(sum);</code></pre>
+<details class="reveal">
+<summary>先自己想,想好了再展开看答案</summary>
+<p>
+输出 <code>12</code>。<code>i</code> 从 1 到 5,当 <code>i == 3</code> 时 <code>continue</code> 跳过 <code>sum += i</code>,
+所以实际累加的是 1+2+4+5 = 12(3 被跳过了,不是循环提前结束)。
+</p>
+</details>
+</div>
+
+<h2 id="exercise">动手练习</h2>
+
+<div class="exercise">
+<h3>练习 1:闭卷编写</h3>
+<p>
+<code>exercises/lesson04/</code> 下新建 <code>Java Class</code>,名字 <code>FizzBuzzGrader</code>。
+在 <code>main</code> 里用一个 <code>for</code> 循环,遍历 1 到 20(含 20),按下面规则打印:
+</p>
+<ul>
+<li>能同时被 3 和 5 整除 → 打印 <code>"FizzBuzz"</code></li>
+<li>只能被 3 整除 → 打印 <code>"Fizz"</code></li>
+<li>只能被 5 整除 → 打印 <code>"Buzz"</code></li>
+<li>都不能整除 → 打印这个数字本身</li>
+</ul>
+<p>提示:整除判断用取余运算符 <code>%</code>(<code>n % 3 == 0</code> 表示能被 3 整除),这个运算符 Python/TS 里也有,用法一致。</p>
+</div>
+
+<div class="exercise">
+<h3>练习 2:预测输出</h3>
+<pre><code>int i = 0;
+while (i &lt; 10) {
+    i++;
+    if (i % 2 == 0) {
+        continue;
+    }
+    if (i &gt; 6) {
+        break;
+    }
+    System.out.println(i);
+}</code></pre>
+<p>不要在 IDE 里跑,先口头说出会打印哪几行,再告诉我答案和推理过程。</p>
+</div>
+
+<h2>参考资料</h2>
+<p class="source-link">
+主要参考:<a href="https://docs.oracle.com/javase/tutorial/java/nutsandbolts/for.html" target="_blank">Oracle 官方教程 · "The for Statement"</a> ·
+<a href="https://docs.oracle.com/javase/tutorial/java/nutsandbolts/while.html" target="_blank">"The while and do-while Statements"</a> ·
+<a href="https://docs.oracle.com/javase/tutorial/java/nutsandbolts/branch.html" target="_blank">"Branching Statements"(break/continue)</a>
+</p>
+
+<div class="ask-agent">
+练习 1 记得闭卷手写并跑一次确认 1~20 全部输出正确;练习 2 先口算再告诉我答案。
+</div>
+
+<div class="nav">
+<a href="0003-operators-and-conditionals.html">上一课</a> ·
+<a href="../reference/">参考文档目录</a> · 下一课会根据你的练习结果安排
+</div>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Lesson 3 · Java 比较/逻辑运算符与条件分支</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main>
+
+<div class="kicker">Lesson 0003 · Java 基础</div>
+<h1>比较运算符、逻辑运算符与 if/else 条件分支</h1>
+
+<p>
+上一课搞清楚了基本类型和它们之间的自动转换规则。这一课往前走一步:怎么用这些值做判断,并根据判断结果走不同的代码分支——
+这是任何后端逻辑(权限校验、成绩等级、库存判断)都离不开的基础。
+</p>
+
+<h2>1. 比较运算符</h2>
+
+<table class="compare-table">
+<tr><th>运算符</th><th>含义</th><th>示例</th></tr>
+<tr><td><code>==</code></td><td>相等(基本类型比较值本身)</td><td><code>age == 20</code></td></tr>
+<tr><td><code>!=</code></td><td>不相等</td><td><code>age != 20</code></td></tr>
+<tr><td><code>&gt;</code> <code>&lt;</code> <code>&gt;=</code> <code>&lt;=</code></td><td>大小比较</td><td><code>gpa &gt;= 3.5</code></td></tr>
+</table>
+
+<div class="callout">
+<strong>注意:</strong> <code>==</code> 对基本类型(<code>int</code>/<code>double</code>/<code>boolean</code>/<code>char</code>)比较的是值本身,
+和 Python/TS 的 <code>==</code> 在数字上表现一致。但 <code>==</code> 用在 <code>String</code> 这种引用类型上时,比较的其实是"是不是同一个对象",
+不是内容是否相同——这一点后面讲引用类型时会专门展开,这一课先只在基本类型上用 <code>==</code>。
+</div>
+
+<h2>2. 逻辑运算符</h2>
+
+<table class="compare-table">
+<tr><th>运算符</th><th>含义</th><th>Python</th><th>TypeScript</th></tr>
+<tr><td><code>&amp;&amp;</code></td><td>与(两边都为 true)</td><td><code>and</code></td><td><code>&amp;&amp;</code></td></tr>
+<tr><td><code>||</code></td><td>或(至少一边为 true)</td><td><code>or</code></td><td><code>||</code></td></tr>
+<tr><td><code>!</code></td><td>非(取反)</td><td><code>not</code></td><td><code>!</code></td></tr>
+</table>
+
+<h2>3. if / else</h2>
+
+<pre><code>int gpa = 85;
+if (gpa &gt;= 90) {
+    System.out.println("A");
+} else if (gpa &gt;= 80) {
+    System.out.println("B");
+} else {
+    System.out.println("C");
+}</code></pre>
+
+<p>
+语法上和 TypeScript/JavaScript 的 <code>if/else if/else</code> 几乎一模一样;和 Python 比,区别是条件必须用小括号包起来,
+分支体必须用花括号(单行也可以省略花括号,但不建议),而且<strong>没有缩进决定作用域这回事</strong>——Java 靠花括号,不靠缩进。
+</p>
+
+<div class="callout ok">
+<strong>条件表达式必须是 <code>boolean</code>:</strong> Java 的 <code>if</code> 括号里只能放一个结果为 <code>boolean</code> 的表达式,
+不像 Python/JS 那样"任何值都能当真假判断"(比如 <code>if (0)``if ("")` 在 Python/JS 里合法,在 Java 里 <code>if (0)</code> 直接编译不过,
+必须写成 <code>if (0 != 0)</code> 这种明确返回 boolean 的表达式)。
+</div>
+
+<h2>预测一下:这段代码输出什么?</h2>
+
+<div class="quiz">
+<pre><code>int age = 17;
+boolean hasParentConsent = false;
+if (age &gt;= 18 || hasParentConsent) {
+    System.out.println("允许注册");
+} else {
+    System.out.println("拒绝注册");
+}</code></pre>
+<details class="reveal">
+<summary>先自己想,想好了再展开看答案</summary>
+<p>
+输出 <code>拒绝注册</code>。<code>age &gt;= 18</code>false,<code>hasParentConsent</code> 也是 <code>false</code>,
+<code>false || false</code> 结果是 <code>false</code>,走 <code>else</code> 分支。
+</p>
+</details>
+</div>
+
+<h2 id="exercise">动手练习</h2>
+
+<div class="exercise">
+<h3>练习 1:闭卷编写</h3>
+<p>
+<code>exercises/lesson03/</code> 下新建 <code>Java Class</code>,名字 <code>GradeChecker</code>。
+在 <code>main</code> 里手写以下逻辑:声明 <code>int score = 72;</code>,然后用 <code>if/else if/else</code> 判断并打印等级:
+</p>
+<ul>
+<li>score &gt;= 90 → 打印 <code>"优秀"</code></li>
+<li>score &gt;= 75 且 &lt; 90 → 打印 <code>"良好"</code></li>
+<li>score &gt;= 60 且 &lt; 75 → 打印 <code>"及格"</code></li>
+<li>其余(score &lt; 60) → 打印 <code>"不及格"</code></li>
+</ul>
+<p>先跑一次确认 72 分打印出 <code>"及格"</code>,然后把 <code>score</code> 改成 <code>95</code>、<code>50</code> 再各跑一次,确认三种分支都对。</p>
+</div>
+
+<div class="exercise">
+<h3>练习 2:预测输出</h3>
+<pre><code>int stock = 0;
+boolean isPreorder = true;
+if (stock &gt; 0 || isPreorder &amp;&amp; !isPreorder) {
+    System.out.println("可购买");
+} else {
+    System.out.println("缺货");
+}</code></pre>
+<p>不要在 IDE 里跑,先口头说出答案和理由(提示:<code>&amp;&amp;</code> 的优先级比 <code>||</code> 高,先算 <code>isPreorder &amp;&amp; !isPreorder</code>)。</p>
+</div>
+
+<h2>参考资料</h2>
+<p class="source-link">
+主要参考:<a href="https://docs.oracle.com/javase/tutorial/java/nutsandbolts/op2.html" target="_blank">Oracle 官方教程 · "Relational and Conditional Operators"</a> ·
+<a href="https://docs.oracle.com/javase/tutorial/java/nutsandbolts/if.html" target="_blank">"The if-then-else Statement"</a>
+</p>
+
+<div class="ask-agent">
+练习 1 记得闭卷手写并跑三次验证三个分支;练习 2 先口算再告诉我答案。
+</div>
+
+<div class="nav">
+<a href="0002-variables-and-primitive-types.html">上一课</a> ·
+<a href="../reference/">参考文档目录</a> · 下一课会根据你的练习结果安排
+</div>
+
+</main>
+</body>
+</html>
