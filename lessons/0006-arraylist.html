@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Lesson 6 · Java ArrayList</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main>
+
+<div class="kicker">Lesson 0006 · Java 基础</div>
+<h1>集合类型:ArrayList</h1>
+
+<p>
+上一课的痛点是数组长度固定,想要动态增删就得用 <code>ArrayList</code>——它是 Java 集合框架(<code>Collections</code>)里最常用的可变长度列表,
+背后本质是一个会自动扩容的数组包装类。用法和 Python 的 <code>list</code>、TS 的 <code>Array</code> 概念一致,但 Java 的写法更啰嗦一些。
+</p>
+
+<h2>1. 声明与基本操作</h2>
+
+<pre><code>import java.util.ArrayList;
+import java.util.List;
+
+List&lt;String&gt; names = new ArrayList&lt;&gt;();
+names.add("Alice");
+names.add("Bob");
+names.add(0, "Zoe");        // 在下标 0 插入
+System.out.println(names.get(1));   // "Alice"
+System.out.println(names.size());   // 3,注意是 size(),不是 length
+names.remove("Bob");                // 按值删除
+names.remove(0);                    // 按下标删除
+System.out.println(names.contains("Alice"));  // true</code></pre>
+
+<div class="callout">
+<strong><code>List&lt;String&gt;</code> 和 <code>ArrayList&lt;String&gt;</code>:</strong> <code>List</code> 是接口,<code>ArrayList</code> 是它的一个实现类。
+按惯例声明变量时用接口类型(<code>List&lt;String&gt; names = new ArrayList&lt;&gt;()</code>),这样以后想换成 <code>LinkedList</code> 之类别的实现,调用方代码不用改。
+<code>&lt;String&gt;</code> 这种写法叫泛型,规定这个列表只能装 <code>String</code>,后面会专门讲,这里先照抄语法。
+</div>
+
+<table class="compare-table">
+<tr><th></th><th>Python</th><th>TypeScript</th><th>Java</th></tr>
+<tr>
+  <td>创建</td>
+  <td><code>names = []</code></td>
+  <td><code>const names: string[] = [];</code></td>
+  <td><code>List&lt;String&gt; names = new ArrayList&lt;&gt;();</code></td>
+</tr>
+<tr>
+  <td>追加</td>
+  <td><code>names.append("Bob")</code></td>
+  <td><code>names.push("Bob")</code></td>
+  <td><code>names.add("Bob")</code></td>
+</tr>
+<tr>
+  <td>取长度</td>
+  <td><code>len(names)</code></td>
+  <td><code>names.length</code></td>
+  <td><code>names.size()</code></td>
+</tr>
+<tr>
+  <td>按下标取值</td>
+  <td><code>names[1]</code></td>
+  <td><code>names[1]</code></td>
+  <td><code>names.get(1)</code>(没有 <code>[]</code> 语法)</td>
+</tr>
+</table>
+
+<h2>2. 数组 vs ArrayList,什么时候用哪个</h2>
+
+<table class="compare-table">
+<tr><th></th><th><code>int[]</code> / <code>String[]</code></th><th><code>ArrayList</code></th></tr>
+<tr><td>长度</td><td>创建后固定</td><td>可动态增删</td></tr>
+<tr><td>基本类型</td><td>能直接装 <code>int</code>/<code>double</code> 等</td><td>只能装对象类型(<code>Integer</code>、<code>Double</code>,不能直接是 <code>int</code>)</td></tr>
+<tr><td>常见场景</td><td>长度提前确定、追求性能的场景</td><td>绝大多数业务代码——元素数量运行时才知道</td></tr>
+</table>
+
+<div class="callout ok">
+<strong>基本类型不能直接进 <code>ArrayList</code>:</strong> <code>List&lt;int&gt;</code> 是非法语法,必须写 <code>List&lt;Integer&gt;</code>。
+Java 会在 <code>add(5)</code> 时自动把 <code>int</code> 包装成 <code>Integer</code>(叫"自动装箱" autoboxing),取出来时也会自动拆箱。
+这一课先知道这个限制存在,原理后面讲包装类时再展开。
+</div>
+
+<h2>3. 遍历</h2>
+
+<pre><code>List&lt;String&gt; names = new ArrayList&lt;&gt;();
+names.add("Alice");
+names.add("Bob");
+
+for (int i = 0; i &lt; names.size(); i++) {
+    System.out.println(names.get(i));
+}
+
+for (String name : names) {   // for-each,和数组一样能用
+    System.out.println(name);
+}</code></pre>
+
+<h2>预测一下:这段代码输出什么?</h2>
+
+<div class="quiz">
+<pre><code>List&lt;Integer&gt; nums = new ArrayList&lt;&gt;();
+nums.add(10);
+nums.add(20);
+nums.add(30);
+nums.remove(1);
+nums.add(99);
+System.out.println(nums);</code></pre>
+<details class="reveal">
+<summary>先自己想,想好了再展开看答案</summary>
+<p>
+输出 <code>[10, 30, 99]</code>。<code>remove(1)</code> 这里的 <code>1</code> 是<strong>下标</strong>(因为 <code>nums</code> 是 <code>List&lt;Integer&gt;</code>,
+<code>remove(int index)</code> 和 <code>remove(Object o)</code> 是两个重载方法,传 <code>int</code> 走的是按下标删除那个版本),删掉的是下标 1 的 <code>20</code>,
+剩下 <code>[10, 30]</code>,再 <code>add(99)</code> 追加到末尾变成 <code>[10, 30, 99]</code>。
+</p>
+</details>
+</div>
+
+<h2 id="exercise">动手练习</h2>
+
+<div class="exercise">
+<h3>练习 1:闭卷编写</h3>
+<p>
+<code>exercises/lesson06/</code> 下新建 <code>Java Class</code>,名字 <code>CourseRoster</code>。
+在 <code>main</code> 里:
+</p>
+<ul>
+<li>声明一个 <code>List&lt;String&gt; students</code>,依次 <code>add</code> 三个学生姓名(随便取)</li>
+<li>用 <code>add(0, ...)</code> 在开头插入一个新学生</li>
+<li>用 <code>remove</code> 按值删除其中一个学生</li>
+<li>用 for-each 遍历打印剩下所有学生,并打印最终 <code>size()</code></li>
+</ul>
+</div>
+
+<div class="exercise">
+<h3>练习 2:找错/设计题</h3>
+<p>
+下面这行代码能不能编译通过?为什么?
+</p>
+<pre><code>List&lt;Integer&gt; scores = new ArrayList&lt;&gt;();
+scores.add(85);
+int first = scores.get(0);
+System.out.println(first + 10);</code></pre>
+<p>
+关注点:<code>scores.get(0)</code> 返回的类型是 <code>Integer</code>,但赋值给了 <code>int</code> 类型的 <code>first</code>,这里发生了什么?
+</p>
+</div>
+
+<h2>参考资料</h2>
+<p class="source-link">
+主要参考:<a href="https://docs.oracle.com/javase/tutorial/collections/interfaces/list.html" target="_blank">Oracle 官方教程 · "The List Interface"</a> ·
+<a href="https://www.baeldung.com/java-arraylist" target="_blank">Baeldung · "Guide to the Java ArrayList"</a>
+</p>
+
+<div class="ask-agent">
+练习 1 记得闭卷手写并跑一次确认输出符合预期;练习 2 先推理再告诉我答案,可以之后跑代码验证。
+</div>
+
+<div class="nav">
+<a href="0005-arrays.html">上一课</a> ·
+<a href="../reference/">参考文档目录</a> · 下一课会根据你的练习结果安排
+</div>
+
+</main>
+</body>
+</html>

@@ -18,6 +18,7 @@ public class ScoreAnalyzer {
         for(int score:scores){
             if(score>=60){
                 System.out.println(score);
+
             }
         }
         System.out.println("-----");

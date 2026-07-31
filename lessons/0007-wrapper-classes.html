@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Lesson 7 · 包装类与自动装箱/拆箱</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main>
+
+<div class="kicker">Lesson 0007 · Java 基础</div>
+<h1>包装类与自动装箱/拆箱</h1>
+
+<p>
+上节课留了一个口子:<code>ArrayList</code> 不能装 <code>int</code>,只能装 <code>Integer</code>,但 <code>int first = scores.get(0)</code> 又能正常跑——Java 到底在背后做了什么?
+这节课就回答这个问题。
+</p>
+
+<h2>1. 为什么要有包装类</h2>
+
+<p>Java 的类型系统分两种:</p>
+<ul>
+<li><strong>基本类型</strong>:<code>int</code>、<code>double</code>、<code>boolean</code>、<code>char</code> 等——存值,不是对象,不能放进 <code>List</code></li>
+<li><strong>引用类型</strong>:所有的类、接口、数组——是对象,可以放进 <code>List</code></li>
+</ul>
+
+<p>包装类就是给每个基本类型配一个对应的引用类型:</p>
+
+<table class="compare-table">
+<tr><th>基本类型</th><th>包装类</th></tr>
+<tr><td><code>byte</code></td><td><code>Byte</code></td></tr>
+<tr><td><code>short</code></td><td><code>Short</code></td></tr>
+<tr><td><code>int</code></td><td><code>Integer</code></td></tr>
+<tr><td><code>long</code></td><td><code>Long</code></td></tr>
+<tr><td><code>float</code></td><td><code>Float</code></td></tr>
+<tr><td><code>double</code></td><td><code>Double</code></td></tr>
+<tr><td><code>char</code></td><td><code>Character</code></td></tr>
+<tr><td><code>boolean</code></td><td><code>Boolean</code></td></tr>
+</table>
+
+<div class="callout">
+<strong>记忆:</strong>除了 <code>int → Integer</code> 和 <code>char → Character</code> 是全称外,其余都是首字母大写的原名。这两个特殊的是因为 <code>Int</code>/<code>Char</code> 作为类名历史上被占用了。
+</div>
+
+<h2>2. 自动装箱与自动拆箱</h2>
+
+<pre><code>// 装箱(boxing):基本类型 → 包装对象
+Integer boxed = 42;                // 等价于 Integer boxed = Integer.valueOf(42);
+
+// 拆箱(unboxing):包装对象 → 基本类型
+int unboxed = boxed;              // 等价于 int unboxed = boxed.intValue();
+
+// 在 ArrayList 里实际发生了什么
+List&lt;Integer&gt; list = new ArrayList&lt;&gt;();
+list.add(85);                     // 装箱:85(int)→Integer.valueOf(85)
+int score = list.get(0);          // 拆箱:list.get(0)(Integer)→Integer.intValue()
+score = score + 10;               // 拆箱做加法,结果还是 int</code></pre>
+
+<table class="compare-table">
+<tr><th></th><th>Java 装箱/拆箱</th><th>Python</th><th>TypeScript</th></tr>
+<tr>
+<td>有这个区分吗</td>
+<td>有,<code>int</code> 和 <code>Integer</code> 是不同的东西</td>
+<td>没有——<code>int</code> 本身就是对象,Python 里一切皆对象</td>
+<td>没有——<code>number</code> 既是基本类型也是对象,引擎自动处理</td>
+</tr>
+</table>
+
+<div class="callout ok">
+<strong>自动装箱/拆箱是编译器的"语法糖":</strong>你在源码里写 <code>Integer x = 5</code>,编译后字节码里实际是 <code>Integer.valueOf(5)</code>。
+不是你代码运行到这一行时才"慢慢变成"对象——编译期就已经把转换代码塞进去了。
+</div>
+
+<h2>3. 容易踩的坑</h2>
+
+<h3>坑 1:null 拆箱会炸</h3>
+<pre><code>Integer maybeNull = null;
+int value = maybeNull;   // 运行时 NullPointerException!拆箱等价于 maybeNull.intValue(),对 null 调方法当然炸</code></pre>
+
+<h3>坑 2:== 比较的是引用,不是值</h3>
+<pre><code>Integer a = 127;
+Integer b = 127;
+System.out.println(a == b);   // true(小值被缓存了,指向同一个对象)
+
+Integer x = 200;
+Integer y = 200;
+System.out.println(x == y);   // false(超出缓存范围,是两个不同的对象)</code></pre>
+
+<div class="callout">
+<strong>Integer 缓存:</strong>Java 把 -128 到 127 的 Integer 对象预先创建好并缓存(<code>Integer.valueOf()</code> 会优先从缓存取)。
+所以小值用 <code>==</code> 偶尔能撞对,大值一定错。比较 Integer 的值请用 <code>.equals()</code> 或者拆箱成 <code>int</code> 后再 <code>==</code>。
+</div>
+
+<h2>预测一下:这段代码输出什么?</h2>
+
+<div class="quiz">
+<pre><code>Integer x = 100;
+Integer y = 100;
+Integer a = 300;
+Integer b = 300;
+
+System.out.println(x == y);
+System.out.println(a == b);
+System.out.println(x.equals(y));
+System.out.println(a.equals(b));</code></pre>
+<details class="reveal">
+<summary>先自己想,想好了再展开看答案</summary>
+<pre><code>true
+false
+true
+true</code></pre>
+<p><code>x == y</code>:100 在 -128~127 缓存范围内,两次装箱拿到同一个对象,用 <code>==</code> 比较引用地址 → true。<br>
+<code>a == b</code>:300 超出缓存范围,每次装箱创建一个新对象,两个对象地址不同 → false。<br>
+<code>x.equals(y)</code> 和 <code>a.equals(b)</code>:<code>equals()</code> 比较的是值,所以不管缓存不缓存都是 true。</p>
+</details>
+</div>
+
+<h2 id="exercise">动手练习</h2>
+
+<div class="exercise">
+<h3>练习 1:闭卷编写</h3>
+<p>
+<code>exercises/lesson07/</code> 下新建 <code>Java Class</code>,名字 <code>ScoreSheet</code>。
+在 <code>main</code> 里:
+</p>
+<ul>
+<li>声明 <code>List&lt;Integer&gt; scores = new ArrayList&lt;&gt;();</code></li>
+<li>往里面加 3 个分数(手动写,不用 Scanner)</li>
+<li>用一个 <code>for</code> 循环,每次 <code>int s = scores.get(i)</code>,累加到 <code>total</code></li>
+<li>计算平均分并打印(平均分用 <code>double</code> 存)</li>
+<li>再往 <code>scores</code> 里加一个 <code>null</code>,然后尝试 <code>int s = scores.get(3)</code>——看看会怎样,写一行注释说明原因</li>
+</ul>
+</div>
+
+<div class="exercise">
+<h3>练习 2:找错</h3>
+<pre><code>public class StudentScores {
+    public static void main(String[] args) {
+        List&lt;Integer&gt; scores = new ArrayList&lt;&gt;();
+        scores.add(95);
+        scores.add(87);
+        scores.add(null);
+
+        int sum = 0;
+        for (int i = 0; i &lt; scores.size(); i++) {
+            sum += scores.get(i);
+        }
+        System.out.println("Sum: " + sum);
+    }
+}</code></pre>
+<p>这段代码编译能不能通过?运行能跑完吗?如果不能,在哪一行炸?为什么?</p>
+</div>
+
+<h2>参考资料</h2>
+<p class="source-link">
+主要参考:<a href="https://docs.oracle.com/javase/tutorial/java/data/autoboxing.html" target="_blank">Oracle 官方教程 · "Autoboxing and Unboxing"</a> ·
+<a href="https://www.baeldung.com/java-wrapper-classes" target="_blank">Baeldung · "Java Wrapper Classes"</a>
+</p>
+
+<div class="ask-agent">
+练习 1 记得闭卷手写并跑一次;练习 2 先推理再告诉我答案,不要直接跑。
+</div>
+
+<div class="nav">
+<a href="0006-arraylist.html">上一课</a> ·
+<a href="../reference/">参考文档目录</a> · 下一课会根据你的练习结果安排
+</div>
+
+</main>
+</body>
+</html>

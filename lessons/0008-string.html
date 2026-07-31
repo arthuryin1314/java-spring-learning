@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Lesson 8 · String 方法与不可变性</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main>
+
+<div class="kicker">Lesson 0008 · Java 基础</div>
+<h1>String:方法、不可变性与比较</h1>
+
+<p>
+前面零散用过 <code>String</code>,但没系统讲过。String 在 Java 里是一个引用类型(和 <code>Integer</code> 一样是对象),但它有一条重要规则:<strong>String 对象创建后内容不可变</strong>。
+所有"修改"操作实际上都是在返回一个新的 String,原来的对象纹丝不动。
+</p>
+
+<h2>1. 创建 String</h2>
+
+<pre><code>String s1 = "hello";                     // 字面量,最常用
+String s2 = new String("hello");         // 强制 new 一个新对象(几乎不这么写)</code></pre>
+
+<div class="callout">
+<strong>别用 <code>new String("...")</code>:</strong> 字面量 <code>"hello"</code> 会被 JVM 放进字符串常量池复用,省内存。
+<code>new String(...)</code> 绕过了这个优化,无谓多创建一个对象。直接 <code>String s = "hello";</code> 就好。
+</div>
+
+<h2>2. 常用方法</h2>
+
+<pre><code>String name = "Alice";
+
+name.length();                    // 5,注意 String 是 length() 方法,数组是 length 属性
+name.charAt(0);                  // 'A',取指定下标的字符
+name.substring(1, 4);             // "lic",从下标1到下标4之前(不含4)
+name.toLowerCase();               // "alice"
+name.toUpperCase();               // "ALICE"
+name.trim();                      // 去掉首尾空白
+name.isEmpty();                   // false,长度是否为0
+name.contains("li");              // true
+name.startsWith("Al");            // true
+name.endsWith("ce");              // true
+
+// 证明不可变性:
+name.toLowerCase();
+System.out.println(name);         // 还是 "Alice"!toLowerCase() 返回了新字符串,没改原对象</code></pre>
+
+<table class="compare-table">
+<tr><th></th><th>Python</th><th>TypeScript</th><th>Java</th></tr>
+<tr>
+<td>长度</td>
+<td><code>len(s)</code></td>
+<td><code>s.length</code></td>
+<td><code>s.length()</code> ← 方法,不是属性!</td>
+</tr>
+<tr>
+<td>取字符</td>
+<td><code>s[0]</code></td>
+<td><code>s[0]</code>(或 <code>s.charAt(0)</code>)</td>
+<td><code>s.charAt(0)</code> ← 没有 <code>[]</code> 语法</td>
+</tr>
+<tr>
+<td>截取</td>
+<td><code>s[1:4]</code></td>
+<td><code>s.slice(1, 4)</code></td>
+<td><code>s.substring(1, 4)</code></td>
+</tr>
+<tr>
+<td>不可变?</td>
+<td>是,字符串不可变</td>
+<td>是,字符串不可变</td>
+<td>是,字符串不可变——但 Java 让你看得更清楚</td>
+</tr>
+</table>
+
+<h2>3. 字符串比较:<code>==</code> vs <code>equals()</code></h2>
+
+<pre><code>String a = "hello";
+String b = "hello";
+String c = new String("hello");
+
+System.out.println(a == b);         // true,同一个常量池对象
+System.out.println(a == c);         // false,不同对象!
+System.out.println(a.equals(c));    // true,equals 比的是内容
+
+// 用户输入/从数据库/网络读来的字符串,永远用 equals!
+String input = scanner.nextLine();
+System.out.println(input == "exit");    // ✗ 错!可能是不同引用
+System.out.println("exit".equals(input)); // ✓ 这样写还能避免 null.equals(...) 炸掉</code></pre>
+
+<div class="callout">
+<strong>Java 里 <code>==</code> 对引用类型比的是内存地址,不是内容!</strong>
+这和 Python 里 <code>is</code> vs <code>==</code> 的区别类似,也和 TS 里 <code>===</code> 对对象的比对规则类似。
+但 Java 的 <code>equals()</code> 不是语法层面内置的,是 <code>Object</code> 类定义的方法——String 覆写了它来比内容。
+后面学自定义类的时候还会再碰到 <code>equals</code> 这个主题。
+</div>
+
+<h2>预测一下:这段代码输出什么?</h2>
+
+<div class="quiz">
+<pre><code>String s = "Java";
+s.toUpperCase();
+s = s + "!";
+System.out.println(s);</code></pre>
+<details class="reveal">
+<summary>先自己想,想好了再展开看答案</summary>
+<p>
+输出 <code>Java!</code>。分步拆解:
+</p>
+<ol>
+<li><code>s.toUpperCase()</code> 返回了 <code>"JAVA"</code>,但没有赋值给任何变量,结果被丢弃</li>
+<li><code>s = s + "!"</code> 创建了新字符串 <code>"Java!"</code> 并<strong>赋值</strong>给了 <code>s</code></li>
+</ol>
+<p><code>toUpperCase()</code> 那一行等于白写——这是新手最常见的 String 陷阱。</p>
+</details>
+</div>
+
+<h2 id="exercise">动手练习</h2>
+
+<div class="exercise">
+<h3>练习 1:闭卷编写</h3>
+<p>
+<code>exercises/lesson08/</code> 下新建 <code>Java Class</code>,名字 <code>StringWorkshop</code>。
+在 <code>main</code> 里,用一个 String 变量 <code>email = "  User@Example.COM  "</code>:
+</p>
+<ul>
+<li>去掉首尾空格</li>
+<li>转成全小写</li>
+<li>检查是否包含 <code>"@"</code>(是的话打印"合法邮箱",否则打印"非法邮箱")</li>
+<li>打印 <code>@</code> 符号的下标位置(用 <code>indexOf</code>,查一下文档或让 IDE 自动补全告诉你签名)</li>
+<li>截取用户名部分(<code>@</code> 之前的部分)并打印</li>
+</ul>
+<p>注意:方法可以链式调用,也可以分步——自己选,但要确保每一步结果都存起来,别重蹈上面预测题的坑。</p>
+</div>
+
+<div class="exercise">
+<h3>练习 2:概念解释</h3>
+<p>
+用自己的话解释:Java 里比较两个 String 的内容用什么?比较两个 int 的内容用什么?
+为什么会分成两套规则?(提示:和 Java 把类型分成基本类型/引用类型有关)
+</p>
+</div>
+
+<h2>参考资料</h2>
+<p class="source-link">
+主要参考:<a href="https://docs.oracle.com/javase/tutorial/java/data/strings.html" target="_blank">Oracle 官方教程 · "Strings"</a> ·
+<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" target="_blank">Java 21 String API 文档</a> ·
+<a href="https://www.baeldung.com/java-string-immutable" target="_blank">Baeldung · "Why String Is Immutable in Java?"</a>
+</p>
+
+<div class="ask-agent">
+练习 1 闭卷手写,不确定 <code>indexOf</code> 的签名就让 IDEA 自动补全提示(这也是一种能力);练习 2 用自己的话说就行,不用背术语。
+</div>
+
+<div class="nav">
+<a href="0007-wrapper-classes.html">上一课</a> ·
+<a href="../reference/">参考文档目录</a> · 下一课会根据你的练习结果安排
+</div>
+
+</main>
+</body>
+</html>
