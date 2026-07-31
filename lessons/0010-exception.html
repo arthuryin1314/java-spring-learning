@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Lesson 10 · Java 异常处理</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main>
+
+<div class="kicker">Lesson 0010 · Java 基础</div>
+<h1>异常处理:try-catch</h1>
+
+<p>
+从第 1 课到现在，你的程序已经炸过很多次了：数组越界 <code>ArrayIndexOutOfBoundsException</code>、null 拆箱 <code>NullPointerException</code>。
+这些"炸掉"在 Java 里叫<strong>异常(Exception)</strong>——程序运行时出了问题，JVM 抛出一个异常对象，如果没人接住，程序直接终止。
+<code>try-catch</code> 就是来接住异常的机制。
+</p>
+
+<h2>1. 基本语法</h2>
+
+<pre><code>try {
+    // 可能出异常的代码
+    int result = 10 / 0;
+    System.out.println("这行不会执行");
+} catch (ArithmeticException e) {
+    // 接住异常后的处理代码
+    System.out.println("除零错误: " + e.getMessage());
+}
+System.out.println("程序继续运行");  // ← 这行会执行！</code></pre>
+
+<div class="callout ok">
+<strong>和 Python/TS 对比:</strong>
+</div>
+
+<table class="compare-table">
+<tr><th></th><th>Python</th><th>TypeScript</th><th>Java</th></tr>
+<tr>
+  <td>语法</td>
+  <td><code>try: ... except X as e: ...</code></td>
+  <td><code>try { ... } catch (e) { ... }</code></td>
+  <td><code>try { ... } catch (X e) { ... }</code></td>
+</tr>
+<tr>
+  <td>异常类型</td>
+  <td>写在 <code>except</code> 后</td>
+  <td>通常不写类型(TS 不强制)</td>
+  <td><strong>必须写</strong>异常类型,<code>catch (类型 变量)</code></td>
+</tr>
+<tr>
+  <td>是否必须处理</td>
+  <td>否</td>
+  <td>否</td>
+  <td>部分异常<strong>必须</strong>处理(下面讲)</td>
+</tr>
+</table>
+
+<h2>2. 你见过哪些异常?</h2>
+
+<table class="compare-table">
+<tr><th>异常类型</th><th>什么时候出现</th><th>你在哪课碰到的</th></tr>
+<tr>
+  <td><code>ArrayIndexOutOfBoundsException</code></td>
+  <td>数组下标越界</td>
+  <td>第 5 课</td>
+</tr>
+<tr>
+  <td><code>NullPointerException</code></td>
+  <td>对 <code>null</code> 调方法/属性(含 null 拆箱)</td>
+  <td>第 7、9 课</td>
+</tr>
+<tr>
+  <td><code>ArithmeticException</code></td>
+  <td>整数除零</td>
+  <td>还没碰到</td>
+</tr>
+<tr>
+  <td><code>NumberFormatException</code></td>
+  <td>字符串转数字失败,如 <code>Integer.parseInt("abc")</code></td>
+  <td>还没碰到</td>
+</tr>
+</table>
+
+<p>这些都是 <code>RuntimeException</code> 的子类——<strong>不强制要求处理</strong>，你可以不写 try-catch，程序炸了就炸了。但业务代码里你显然不想让一个异常直接把整个请求打挂。</p>
+
+<h2>3. 多重 catch 与 finally</h2>
+
+<pre><code>try {
+    String input = "abc";
+    int num = Integer.parseInt(input);     // NumberFormatException
+    int result = 100 / num;                // 如果 num==0 → ArithmeticException
+} catch (NumberFormatException e) {
+    System.out.println("输入不是数字");
+} catch (ArithmeticException e) {
+    System.out.println("不能除零");
+} catch (Exception e) {
+    System.out.println("其他未知异常: " + e.getMessage());
+} finally {
+    System.out.println("这行无论如何都会执行");
+}</code></pre>
+
+<div class="callout">
+<strong>catch 的顺序有讲究:</strong> 从上到下匹配，匹配到第一个就停。<code>Exception</code> 是所有异常的父类，放在最上面会吞掉所有具体的 catch——所以 <strong>先抓具体，最后抓宽泛</strong>。
+<code>finally</code> 块可选，无论是否抛异常、异常是否被 catch，它都会执行。通常用来释放资源（关文件、关数据库连接）。
+</div>
+
+<h2>4. 什么时候用 try-catch，什么时候不管?</h2>
+
+<table class="compare-table">
+<tr><th>做法</th><th>适用场景</th></tr>
+<tr>
+  <td>用 try-catch 包住并处理</td>
+  <td>你知道可能出错，而且有办法补救。比如用户输入了"abc"但你想要的是数字——可以 catch 后给个默认值或提示重新输入</td>
+</tr>
+<tr>
+  <td>不 catch，让异常往上抛</td>
+  <td>出了这个错说明程序进入了不可预期的状态，你也不知道怎么补救。比如内部数据结构的 NPE——更可能是代码 bug，不是该 catch 的问题</td>
+</tr>
+<tr>
+  <td>catch 后记录日志再抛</td>
+  <td>需要记录错误信息用于排查，但自己处理不了，交给上层处理</td>
+</tr>
+</table>
+
+<div class="callout ok">
+<strong>一个简单原则:</strong> 能正确处理异常时才 catch，否则别碰它。
+新手常见错误是 <code>try { ... } catch (Exception e) {}</code>——空的 catch 块，把异常吞掉当没发生。这比程序直接炸掉更危险，因为你不知道出了问题。
+</div>
+
+<h2>预测一下:这段代码输出什么?</h2>
+
+<div class="quiz">
+<pre><code>int[] arr = {10, 20, 30};
+try {
+    System.out.println(arr[5]);
+    System.out.println("A");
+} catch (ArrayIndexOutOfBoundsException e) {
+    System.out.println("B");
+}
+System.out.println("C");</code></pre>
+<details class="reveal">
+<summary>先自己想,想好了再展开看答案</summary>
+<p>
+输出 <code>B</code> 然后 <code>C</code>。<code>arr[5]</code> 抛异常 → try 块里后面的 <code>"A"</code> 跳过 → 跳到 catch 打印 <code>"B"</code> → catch 结束后程序继续，打印 <code>"C"</code>。
+</p>
+<p><strong>关键:</strong> catch 不会让程序终止，这只是"异常被处理了"。如果你把 catch 删掉，程序直接炸在 arr[5] 那一行，C 也不会打印。</p>
+</details>
+</div>
+
+<h2 id="exercise">动手练习</h2>
+
+<div class="exercise">
+<h3>练习 1:闭卷编写</h3>
+<p>
+<code>exercises/lesson10/</code> 下新建 <code>Java Class</code>,名字 <code>SafeDivider</code>。
+<code>main</code> 方法接收两个命令行参数(通过 <code>args</code> 数组——还记得第 5 课的数组吗?),分别作为被除数和除数:
+</p>
+<ul>
+<li>把 <code>args[0]</code> 和 <code>args[1]</code> 用 <code>Integer.parseInt()</code> 转成 <code>int</code></li>
+<li>做整数除法并打印结果</li>
+<li>用 try-catch 处理两种异常:<strong>输入不是数字</strong>(<code>NumberFormatException</code>)和<strong>除数为零</strong>(<code>ArithmeticException</code>),分别打印中文提示</li>
+<li>用 <code>finally</code> 打印"计算结束",确认一定被执行</li>
+</ul>
+<p>运行方式:在 IDEA 的 Run → Edit Configurations → Program arguments 填 <code>100 5</code>(正常)、<code>100 abc</code>(格式错误)、<code>100 0</code>(除零),分别跑一次。</p>
+</div>
+
+<div class="exercise">
+<h3>练习 2:找错题</h3>
+<p>下面这段代码有什么问题?</p>
+<pre><code>try {
+    String name = null;
+    System.out.println(name.length());
+} catch (Exception e) {
+    // 忽略
+}
+System.out.println("用户名长度获取完毕");</code></pre>
+<p>有两个问题要指出:<br>
+1. 技术层面:这段代码的行为是什么?<br>
+2. 工程层面:这种写法在生产代码里为什么不好?</p>
+</div>
+
+<h2>参考资料</h2>
+<p class="source-link">
+主要参考:<a href="https://docs.oracle.com/javase/tutorial/essential/exceptions/" target="_blank">Oracle 官方教程 · "Lesson: Exceptions"</a> ·
+<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Exception.html" target="_blank">Java 21 Exception API 文档</a> ·
+<a href="https://www.baeldung.com/java-exceptions" target="_blank">Baeldung · "Exception Handling in Java"</a>
+</p>
+
+<div class="ask-agent">
+练习 1 记得用三种输入各跑一次，观察正常路径和异常路径下 <code>finally</code> 是否都执行了；练习 2 想清楚再回答。
+</div>
+
+<div class="nav">
+<a href="0009-map.html">上一课</a> ·
+<a href="../reference/">参考文档目录</a> · 下一课会根据你的练习结果安排
+</div>
+
+</main>
+</body>
+</html>
